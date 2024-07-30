@@ -13,4 +13,5 @@ fi
 
 pip install -r requirements.txt
 
-sudo fastapi dev main.py
+#have to mention the binary path for fastapi
+sudo ./.server_env/bin/fastapi dev main.py
