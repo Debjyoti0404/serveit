@@ -14,4 +14,4 @@ fi
 pip install -r requirements.txt
 
 #have to mention the binary path for fastapi
-sudo ./.server_env/bin/fastapi dev main.py
+sudo ./.server_env/bin/fastapi dev main.py --port 5001
