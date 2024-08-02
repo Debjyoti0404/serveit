@@ -1,26 +1,37 @@
-import subprocess
+import subprocess, yaml
+import docker
+from docker.errors import APIError
 
-def deploy(cont_name: str) -> list:
+def deploy(image_name: str) -> list:
+    client = docker.from_env()
+    
+    try:
+         client.images.pull(image_name)
+    except APIError:
+         return ["container image does not exist", image_name]
+
+    container = client.containers.run(
+        image_name,
+        ports={'8000/tcp': 6000},
+        detach=True
+    )
+    
+    
+    hostname = 'sankha.debsen.co'
+    new_record = {
+         'hostname': hostname, #fixed for now
+         'service': 'https://localhost:6000' #fixed port for now
+    }
+
     with open('/etc/cloudflared/config.yml', 'r', encoding='utf-8') as file: 
-	    data = file.readlines() 
+	    site_records = yaml.safe_load(file)
 
-    print(data)
-    data.append(data[-1])
-    data[-2] = "Here is my modified Line 2\n"
+    site_records['ingress'].insert(-1, new_record)
 
     with open('/etc/cloudflared/config.yml', 'w', encoding='utf-8') as file: 
-        file.writelines(data)
-    #with open('/etc/cloudflared/config.yml', 'r', encoding='utf-8') as file: 
-    #data = file.readlines() 
+        yaml.safe_dump(site_records, file, default_flow_style=False)
+    
+    process = subprocess.call(["sudo", "restart", "cloudflared"])
 
-    #print(data) 
-    #data[1] = "Here is my modified Line 2\n"
-
-    #with open('example.txt', 'w', encoding='utf-8') as file: 
-    #file.writelines(data) 
-
-    process = subprocess.Popen(["sudo", "echo", "hello"], stdout=subprocess.PIPE)
-    output = process.communicate()
-
-    return [output, cont_name]
+    return [container, image_name, hostname]
 
