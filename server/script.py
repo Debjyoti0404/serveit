@@ -31,7 +31,7 @@ def deploy(image_name: str) -> list:
     with open('/etc/cloudflared/config.yml', 'w', encoding='utf-8') as file: 
         yaml.safe_dump(site_records, file, default_flow_style=False)
     
-    process = subprocess.call(["sudo", "restart", "cloudflared"])
+    process = subprocess.call(["sudo", "systemctl", "restart", "cloudflared"])
 
-    return [container, image_name, hostname]
+    return [image_name, hostname]
 
