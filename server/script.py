@@ -12,7 +12,7 @@ def deploy(image_name: str) -> list:
 
     container = client.containers.run(
         image_name,
-        ports={'8000/tcp': 6000},
+        ports={'6000/tcp': 8000},
         detach=True
     )
     
