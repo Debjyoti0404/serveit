@@ -20,7 +20,7 @@ def deploy(image_name: str) -> list:
     hostname = 'sankha.debsen.co'
     new_record = {
          'hostname': hostname, #fixed for now
-         'service': 'https://localhost:8003' #fixed port for now
+         'service': 'http://localhost:8003' #fixed port for now
     }
 
     with open('/etc/cloudflared/config.yml', 'r', encoding='utf-8') as file: 
