@@ -15,7 +15,7 @@ def update_apache_config(app_name, port):
      new_line = f"    SetEnvIf Host ^{app_name}\.${{DOMAIN}}$ DOCKER_PORT={port}\n"
 
      # Find the last SetEnvIf line and add the new one after it
-     last_setenvif = list(re.finditer(r'^\s*SetEnvIf', config, re.MULTILINE))[-1]
+     last_setenvif = list(re.finditer(r'^\s*SetEnvIf\s+Host\s+\^.*\\\.\$\{DOMAIN\}\$\s+DOCKER_PORT=\d+$', config, re.MULTILINE))[-1]
      insert_position = last_setenvif.end() + 1
 
      new_config = config[:insert_position] + new_line + config[insert_position:]
