@@ -4,17 +4,20 @@ import re
 from docker.errors import APIError
 import docker.errors
 import crud
+import psutil
 
 APACHE_CONFIG = '/etc/apache2/sites-available/000-default.conf'
 
 def find_available_port(start_port=8000, end_port=9000) -> int:
-    client = docker.from_env()
-    used_ports = set(container.attrs['NetworkSettings']['Ports'].keys() 
-                     for container in client.containers.list())
+    used_ports = set()
+    for conn in psutil.net_connections():
+        if conn.laddr.port >= start_port and conn.laddr.port <= end_port:
+            used_ports.add(conn.laddr.port)
     
-    for port in range(start_port, end_port):
-        if not any(str(port) in p for p in used_ports):
+    for port in range(start_port, end_port + 1):
+        if port not in used_ports:
             return port
+        
     raise Exception("No available ports")
 
 def reload_apache() -> None:
