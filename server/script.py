@@ -5,6 +5,7 @@ from docker.errors import APIError
 import docker.errors
 import crud
 import psutil
+from sqlalchemy.orm import Session
 
 APACHE_CONFIG = '/etc/apache2/sites-available/000-default.conf'
 
@@ -41,7 +42,7 @@ def update_apache_config(app_name, port, method=1) -> None: #method = 1 for addi
      with open(APACHE_CONFIG, 'w') as f:
           f.write(new_config)
      
-def deploy(image_name: str, port_to_listen: int, subdomain_name: str) -> list:
+def deploy(image_name: str, port_to_listen: int, subdomain_name: str, db: Session) -> list:
      """
      Get the image -> Find a free port -> map the port_to_listen to assigned port -> deploy and get the container id
      -> update database and apache config
@@ -61,20 +62,20 @@ def deploy(image_name: str, port_to_listen: int, subdomain_name: str) -> list:
           restart_policy={"Name": "always"} #for starting the running containers automatically after restart
      )
 
-     register = crud.create_item(subdomain_name, container.id, port_no)
+     register = crud.create_item(subdomain_name, container.id, port_no, db)
 
      hostname = update_apache_config(subdomain_name, port_no)
      reload_apache() 
 
      return [image_name, hostname]
 
-def delete(subdomain_name: str) -> str:
+def delete(subdomain_name: str, db: Session) -> str:
      """
      fetch container id from db -> stop and remove the container -> remove unused images -> delete from the apache
      -> reload apache -> send confirmation
      """
      client = docker.from_env()
-     container_info = crud.read_item(subdomain_name)
+     container_info = crud.read_item(subdomain_name, db)
      port_no = 0
      if container_info:
           container = client.containers.get(container_info.container_id)

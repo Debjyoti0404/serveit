@@ -1,5 +1,6 @@
-from fastapi import FastAPI
-from database import engine, database
+from fastapi import FastAPI, Depends
+from database import engine, database, get_db
+from sqlalchemy.orm import Session
 from contextlib import asynccontextmanager
 from models import Base
 import script
@@ -15,9 +16,9 @@ app = FastAPI()
 Base.metadata.create_all(bind=engine)
 
 @app.post("/create")
-async def create(image_name: str, port_to_listen: int, subdomain_name: str):
+async def create(image_name: str, port_to_listen: int, subdomain_name: str, db: Session = Depends(get_db)):
     if image_name and port_to_listen and subdomain_name:
-        ans = script.deploy(image_name, port_to_listen, subdomain_name)
+        ans = script.deploy(image_name, port_to_listen, subdomain_name, db)
         return {"image_name": ans[0],
                 "url": ans[1],
         }
@@ -25,9 +26,9 @@ async def create(image_name: str, port_to_listen: int, subdomain_name: str):
         return {"message": "default"}
     
 @app.delete("/del")
-async def delete(subdomain_name: str):
+async def delete(subdomain_name: str, db: Session = Depends(get_db)):
     if subdomain_name:
-        ans = script.delete(subdomain_name)
+        ans = script.delete(subdomain_name, db)
         if ans:
             return {"msg": ans}
         else:
