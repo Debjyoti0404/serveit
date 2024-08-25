@@ -89,7 +89,7 @@ def delete(subdomain_name: str, db: Session) -> str:
               return None
           subprocess.run(['docker', 'image', 'prune', '-a', '-f'])
 
-          crud.delete_item(subdomain_name)
+          crud.delete_item(subdomain_name, db)
      else:
          return None
      
