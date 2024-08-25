@@ -1,6 +1,6 @@
 from fastapi import Depends
 from sqlalchemy.orm import Session
-from db import get_db
+from database import get_db
 from models import Item
 
 def create_item(name: str, id: str, port: int, db: Session = Depends(get_db)):

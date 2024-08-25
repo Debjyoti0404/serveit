@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from db import engine, database
+from database import engine, database
 from contextlib import asynccontextmanager
 from models import Base
 import script
